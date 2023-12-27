@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CMakeRunConfigurationManager" shouldGenerate="true" shouldDeleteObsolete="true">
+    <generated />
+  </component>
+  <component name="CMakeSettings">
+    <configurations>
+      <configuration PROFILE_NAME="Debug" CONFIG_NAME="Debug" />
+    </configurations>
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="f52264e6-0cca-4ed8-81ca-6ffb38ca4256" name="Default Changelist" comment="" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ClangdSettings">
+    <option name="formatViaClangd" value="false" />
+  </component>
+  <component name="ProjectId" id="2UwGT4xUHSd8Vt9mJcfiDOUOhmR" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="cf.first.check.clang-format" value="false" />
+    <property name="com.intellij.ide.scratch.LRUPopupBuilder$1/New Scratch File" value="ObjectiveC" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="nodejs_package_manager_path" value="npm" />
+    <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="f52264e6-0cca-4ed8-81ca-6ffb38ca4256" name="Default Changelist" comment="" />
+      <created>1693843233901</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1693843233901</updated>
+      <workItem from="1693843235605" duration="54000" />
+      <workItem from="1695079804007" duration="5171000" />
+      <workItem from="1695095570990" duration="5357000" />
+      <workItem from="1695423277333" duration="46203000" />
+      <workItem from="1695740364522" duration="1134000" />
+      <workItem from="1695745703220" duration="18672000" />
+      <workItem from="1696028730786" duration="145166000" />
+      <workItem from="1696714270723" duration="57843000" />
+      <workItem from="1697552201214" duration="877000" />
+      <workItem from="1697916304606" duration="1880000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="2" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="223" y="87" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1693843280063">
+      <screen x="0" y="0" width="1536" height="864" />
+    </state>
+    <state x="223" y="87" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1536.864@0.0.1536.864" timestamp="1693843280063" />
+    <state x="93" y="93" width="1350" height="678" key="DiffContextDialog" timestamp="1695860412703">
+      <screen x="0" y="0" width="1536" height="864" />
+    </state>
+    <state x="93" y="93" width="1350" height="678" key="DiffContextDialog/0.0.1536.864@0.0.1536.864" timestamp="1695860412703" />
+    <state x="549" y="187" key="FileChooserDialogImpl" timestamp="1695661703797">
+      <screen x="0" y="0" width="1536" height="864" />
+    </state>
+    <state x="549" y="187" key="FileChooserDialogImpl/0.0.1536.864@0.0.1536.864" timestamp="1695661703797" />
+    <state x="277" y="77" key="SettingsEditor" timestamp="1697552438505">
+      <screen x="0" y="0" width="1536" height="864" />
+    </state>
+    <state x="277" y="77" key="SettingsEditor/0.0.1536.864@0.0.1536.864" timestamp="1697552438505" />
+    <state width="498" height="446" key="SwitcherDM" timestamp="1695859769848">
+      <screen x="0" y="0" width="1536" height="864" />
+    </state>
+    <state width="498" height="446" key="SwitcherDM/0.0.1536.864@0.0.1536.864" timestamp="1695859769848" />
+    <state x="93" y="93" width="1350" height="678" key="com.intellij.history.integration.ui.views.RecentChangeDialog" timestamp="1695860412703">
+      <screen x="0" y="0" width="1536" height="864" />
+    </state>
+    <state x="93" y="93" width="1350" height="678" key="com.intellij.history.integration.ui.views.RecentChangeDialog/0.0.1536.864@0.0.1536.864" timestamp="1695860412703" />
+    <state x="479" y="151" width="577" height="562" key="find.popup" timestamp="1695665987858">
+      <screen x="0" y="0" width="1536" height="864" />
+    </state>
+    <state x="479" y="151" width="577" height="562" key="find.popup/0.0.1536.864@0.0.1536.864" timestamp="1695665987858" />
+    <state x="425" y="197" width="672" height="677" key="run.anything.popup" timestamp="1697916325985">
+      <screen x="0" y="0" width="1536" height="864" />
+    </state>
+    <state x="425" y="197" width="672" height="677" key="run.anything.popup/0.0.1536.864@0.0.1536.864" timestamp="1697916325985" />
+    <state x="561" y="290" key="scopes" timestamp="1695658763552">
+      <screen x="0" y="0" width="1536" height="864" />
+    </state>
+    <state x="561" y="290" key="scopes/0.0.1536.864@0.0.1536.864" timestamp="1695658763552" />
+    <state x="431" y="181" key="search.everywhere.popup" timestamp="1696282288486">
+      <screen x="0" y="0" width="1536" height="864" />
+    </state>
+    <state x="431" y="181" key="search.everywhere.popup/0.0.1536.864@0.0.1536.864" timestamp="1696282288486" />
+  </component>
+</project>
