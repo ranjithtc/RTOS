@@ -19,7 +19,6 @@
 #include "uart0.h"
 #include <stdint.h>
 
-
 extern setASP(void);
 extern setPSP(uint32_t);
 extern setPrivilege(void);
@@ -56,7 +55,8 @@ uint8_t change = 0;
 #define REGIONPRIORITY7 0x7
 
 // Mutex
-typedef struct _mutex {
+typedef struct _mutex 
+{
   bool lock;
   uint8_t queueSize;
   uint8_t processQueue[MAX_MUTEX_QUEUE_SIZE];
@@ -65,7 +65,8 @@ typedef struct _mutex {
 mutex mutexes[MAX_MUTEXES];
 
 // Semaphore
-typedef struct _semaphore {
+typedef struct _semaphore 
+{
   uint8_t count;
   uint8_t queueSize;
   uint8_t processQueue[MAX_SEMAPHORE_QUEUE_SIZE];
@@ -92,7 +93,8 @@ bool preemption = false;          // preemption (true) or cooperative (false)
 
 // TCB
 #define NUM_PRIORITIES 8
-struct _tcb {
+struct _tcb 
+{
   uint8_t state;           // see STATE_ values above
   void *pid;               // used to uniquely identify thread (add of task fn)
   void *spInit;            // original top of stack
@@ -111,28 +113,36 @@ struct _tcb {
 // Subroutines
 //-----------------------------------------------------------------------------
 
-bool initMutex(uint8_t mutex) {
+bool initMutex(uint8_t mutex) 
+{
   bool ok = (mutex < MAX_MUTEXES);
-  if (ok) {
+  if (ok) 
+  {
     mutexes[mutex].lock = false;
     mutexes[mutex].lockedBy = 0;
   }
   return ok;
 }
 
-bool initSemaphore(uint8_t semaphore, uint8_t count) {
+bool initSemaphore(uint8_t semaphore, uint8_t count) 
+{
   bool ok = (semaphore < MAX_SEMAPHORES);
-  { semaphores[semaphore].count = count; }
+  if(ok)
+  { 
+    semaphores[semaphore].count = count; 
+  }
   return ok;
 }
 
 // REQUIRED: initialize systick for 1ms system timer
-void s(void) {
+void initRtos(void) 
+{
   uint8_t i;
   // no tasks running
   taskCount = 0;
   // clear out tcb records
-  for (i = 0; i < MAX_TASKS; i++) {
+  for (i = 0; i < MAX_TASKS; i++) 
+  {
     tcb[i].state = STATE_INVALID;
     tcb[i].pid = 0;
   }
@@ -141,17 +151,18 @@ void s(void) {
 uint8_t k, reg[8], track;
 
 // REQUIRED: Implement prioritization to NUM_PRIORITIES
-uint8_t rtosScheduler(void) {
-
+uint8_t rtosScheduler(void) 
+{
   if (priorityScheduler == 0) 
   {
     bool ok;
     static uint8_t task = 0xFF;
     ok = false;
-    while (!ok) {
+    while (!ok) 
+    {
       task++;
       if (task >= MAX_TASKS)
-        task = 0;
+      task = 0;
       ok = (tcb[task].state == STATE_READY || tcb[task].state == STATE_UNRUN);
     }
     return task;
@@ -162,7 +173,7 @@ uint8_t rtosScheduler(void) {
     int i, j, start, end;
     int present = 0;
 
-    for (i = 0; i < 8; i++) 
+    for (i = 0; i < 8; i++)       //Looping from 0 to 7 is because we have 8 different priorities for each tasks.
     {
       if (present + 1 == MAX_TASKS)
         start = 0;
@@ -174,11 +185,12 @@ uint8_t rtosScheduler(void) {
       else
         end = present;
 
-      if (start < end) {
-        while (start < end) {
+      if (start < end) 
+      {
+        while (start < end) 
+        {
           if (tcb[start].priority == i)
-            if (tcb[start].state == STATE_READY ||
-                tcb[start].state == STATE_UNRUN)
+            if (tcb[start].state == STATE_READY || tcb[start].state == STATE_UNRUN)
               return start;
 
           if (start == MAX_TASKS)
@@ -193,8 +205,7 @@ uint8_t rtosScheduler(void) {
         while (start > end) 
         {
           if (tcb[start].priority == i)
-            if (tcb[start].state == STATE_READY ||
-                tcb[start].state == STATE_UNRUN)
+            if (tcb[start].state == STATE_READY || tcb[start].state == STATE_UNRUN)
               return start;
           if (start == MAX_TASKS)
             start = 0;
@@ -204,8 +215,7 @@ uint8_t rtosScheduler(void) {
         while (start < end) 
         {
           if (tcb[start].priority == i)
-            if (tcb[start].state == STATE_READY ||
-                tcb[start].state == STATE_UNRUN)
+            if (tcb[start].state == STATE_READY || tcb[start].state == STATE_UNRUN)
               return start;
           if (start == MAX_TASKS)
             start = 0;
@@ -234,9 +244,7 @@ void startRtos(void)
   setASP();
   _fn funptr;
   funptr = (_fn)tcb[taskCurrent].pid; // point to the current top
-
   tcb[taskCurrent].state = STATE_READY;
-
   setunPrivilege();
   funptr();
 }
@@ -254,15 +262,19 @@ bool createThread(_fn fn, const char name[], uint8_t priority,uint32_t stackByte
   static uint32_t currbase, nextbase;
   uint8_t j;
   bool found = false;
-  if (taskCount < MAX_TASKS) {
-    // make sure fn not already in list (prevent reentrancy)
-    while (!found && (i < MAX_TASKS)) {
+  if (taskCount < MAX_TASKS) 
+  {
+    // Make sure fn not already in list (prevent reentrancy)
+    while (!found && (i < MAX_TASKS)) 
+    {
       found = (tcb[i++].pid == fn);
     }
-    if (!found) {
+    if (!found) 
+    {
       // find first available tcb record
       i = 0;
-      while (tcb[i].state != STATE_INVALID) {
+      while (tcb[i].state != STATE_INVALID) 
+      {
         i++;
       }
       tcb[i].state = STATE_UNRUN;
@@ -272,11 +284,14 @@ bool createThread(_fn fn, const char name[], uint8_t priority,uint32_t stackByte
         tcb[i].srd[j] = 0;
 
       // we need to calulate  where our stack pointer will be pointing to for
-      // that wee make use of the calculations available
-      if (i == 0) {
+      // that we make use of the calculations available
+      if (i == 0) 
+      {
         currbase = 0x20001000;
         nextbase = (uint32_t)mallocFromHeap(stackBytes);
-      } else {
+      } 
+      else 
+      {
         nextbase = (uint32_t)mallocFromHeap(stackBytes);
       }
 
@@ -286,42 +301,44 @@ bool createThread(_fn fn, const char name[], uint8_t priority,uint32_t stackByte
       temp = (uint32_t)(nextbase - stackBytes);
       // nextbase-stackBytes
 
-      if (stackBytes) {
-        while (a < stackBytes) {
-          if ((temp >= 0x20001000) && (temp < 0x20002000)) {
-
+      if (stackBytes) 
+      {
+        while (a < stackBytes) 
+        {
+          if ((temp >= 0x20001000) && (temp < 0x20002000)) 
+          {
             base = 0x20001000;
             curr = 4;
             a += 512;
             region = REGIONPRIORITY3;
             k = 0;
           }
-
-          if ((temp >= 0x20002000) && (temp < 0x20004000)) {
+          if ((temp >= 0x20002000) && (temp < 0x20004000)) 
+          {
             base = 0x20002000;
             curr = 8;
             a += 1024;
             region = REGIONPRIORITY4;
             k = 1;
           }
-
-          if ((temp >= 0x20004000) && (temp < 0x20005000)) {
+          if ((temp >= 0x20004000) && (temp < 0x20005000)) 
+          {
             base = 0x20004000;
             curr = 4;
             a += 512;
             region = REGIONPRIORITY5;
             k = 2;
           }
-
-          if ((temp >= 0x20005000) && (temp < 0x20006000)) {
+          if ((temp >= 0x20005000) && (temp < 0x20006000)) 
+          {
             base = 0x20005000;
             curr = 4;
             a += 512;
             region = REGIONPRIORITY6;
             k = 3;
           }
-
-          if ((temp >= 0x20006000) && (temp <= 0x20007FFF)) {
+          if ((temp >= 0x20006000) && (temp <= 0x20007FFF)) 
+          {
             base = 0x20006000;
             curr = 8;
             a += 1024;
@@ -332,17 +349,17 @@ bool createThread(_fn fn, const char name[], uint8_t priority,uint32_t stackByte
           if (temp > 0x20007FFF)
             return 0;
 
-          if (curr == 4) {
-            uint32_t div = 0x200;
+          if (curr == 4) 
+          {
+            uint32_t div = 0x200;     // 4K block is divided into 8 subregions each of 512Bytes(0x200)
             part = temp - base;
             part = part / div;
-            tcb[i].srd[k] |=
-            1 << part; // adding so that we can  utilize this later on
-            //  subregionenable( region,1<< part );
+            tcb[i].srd[k] |= 1 << part; // adding so that we can  utilize this later on
+            // subregion enable( region,1<< part );
             temp += 0x200;
           }
-
-          if (curr == 8) {
+          if (curr == 8) 
+          {
             uint32_t div = 0x400;
             part = temp - base;
             part = part / div;
@@ -355,28 +372,22 @@ bool createThread(_fn fn, const char name[], uint8_t priority,uint32_t stackByte
 
       reg[track++] = k;
 
-      // end of the generate srd mask
+      // End of the generate srd mask
       currbase = nextbase;
-
       tcb[i].sp = (uint8_t *)(nextbase - 1);
       tcb[i].spInit = (uint8_t *)(nextbase - 1);
-
       tcb[i].ticks = 0;
-
       uint8_t t = 0;
-      while (name[t] != '\0') {
+      while (name[t] != '\0') 
+      {
         tcb[i].name[t] = name[t];
         t++;
       }
-
       tcb[i].name[t] = '\0';
-
       tcb[i].priority = priority;
-
       tcb[i].semaphore = 0;
       tcb[i].mutex = 0;
-      // increment task count
-      taskCount++;
+      taskCount++;  // Increment task count
       ok = true;
     }
   }
@@ -389,8 +400,10 @@ int priorityscheduler() {}
 void restartThread(_fn fn) 
 {
   int i = 0;
-  for (i = 0; i < MAX_TASKS; i++) {
-    if (tcb[i].pid == fn) {
+  for (i = 0; i < MAX_TASKS; i++) 
+  {
+    if (tcb[i].pid == fn) 
+    {
       tcb[i].sp = tcb[i].spInit;
       tcb[i].state = STATE_UNRUN;
       break;
@@ -403,23 +416,30 @@ void restartThread(_fn fn)
 void stopThread(_fn fn) 
 {
   int i = 0, index, j, k = 0;
-  for (i = 0; i < MAX_TASKS; i++) {
-    if ((tcb[i].pid) == fn) {
+  for (i = 0; i < MAX_TASKS; i++) 
+  {
+    if ((tcb[i].pid) == fn) 
+    {
       tcb[i].state = STATE_STOPPED;
       index = i;
-      for (j = 0; j < MAX_SEMAPHORES; j++) {
-        for (k = 0; k < MAX_SEMAPHORE_QUEUE_SIZE; k++) {
+      for (j = 0; j < MAX_SEMAPHORES; j++) 
+      {
+        for (k = 0; k < MAX_SEMAPHORE_QUEUE_SIZE; k++) 
+        {
           // which task is that
-          if (semaphores[j].processQueue[k] == index) {
-            while (k < semaphores[j].queueSize) {
-              if (k <= semaphores[j].queueSize - 2) {
-                semaphores[j].processQueue[k] =
-                semaphores[j].processQueue[k + 1];
+          if (semaphores[j].processQueue[k] == index) 
+          {
+            while (k < semaphores[j].queueSize) 
+            {
+              if (k <= semaphores[j].queueSize - 2) 
+              {
+                semaphores[j].processQueue[k] = semaphores[j].processQueue[k + 1];
                 semaphores[j].processQueue[k + 1] = 0;
                 semaphores[j].queueSize--;
                 /// not incrementing coutn since it is being transferred from
                 /// the next process (already incremented )
-              } else if (k == semaphores[j].queueSize - 1) {
+              } else if (k == semaphores[j].queueSize - 1) 
+              {
                 semaphores[j].processQueue[k] = 0;
                 semaphores[j].queueSize--;
               }
@@ -430,21 +450,27 @@ void stopThread(_fn fn)
       }
     }
   }
-  // mutex
+  // Mutex
   int flag, pass;
-  for (i = 0; i < MAX_TASKS; i++) {
-    if ((tcb[i].pid) == fn) {
+  for (i = 0; i < MAX_TASKS; i++) 
+  {
+    if ((tcb[i].pid) == fn) 
+    {
       tcb[i].state = STATE_STOPPED;
       index = i;
-      for (j = 0; j < MAX_MUTEXES; j++) {
+      for (j = 0; j < MAX_MUTEXES; j++) 
+      {
         flag = 0, pass = 0;
-        if ((mutexes[j].lockedBy == index) && pass == 0) {
+        if ((mutexes[j].lockedBy == index) && pass == 0) 
+        {
           mutexes[j].lock = 0;
           flag = 1;
           pass = 1;
         }
-        for (k = 0; k < MAX_MUTEX_QUEUE_SIZE; k++) {
-          if ((flag == 1) && pass == 1) {
+        for (k = 0; k < MAX_MUTEX_QUEUE_SIZE; k++)
+        {
+          if ((flag == 1) && pass == 1) 
+          {
             tcb[mutexes[j].processQueue[0]].state = STATE_READY;
             mutexes[j].lockedBy = mutexes[j].processQueue[0];
 
@@ -453,25 +479,28 @@ void stopThread(_fn fn)
             mutexes[j].queueSize--;
           }
           // which task is that
-          else if ((mutexes[j].processQueue[k]) == index) {
+          else if ((mutexes[j].processQueue[k]) == index) 
+          {
             // mark the next task as ready is ????
             //  tcb[mutexes[j].processQueue[k+1]].state=STATE_READY;
 
-            while (k < mutexes[j].queueSize) {
-              if (k <= mutexes[j].queueSize - 2) {
+            while (k < mutexes[j].queueSize) 
+            {
+              if (k <= mutexes[j].queueSize - 2) 
+              {
                 mutexes[j].processQueue[k] = mutexes[j].processQueue[k + 1];
                 mutexes[j].processQueue[k + 1] = 0;
                 mutexes[j].queueSize--;
                 /// not incrementing coutn since it is being transferred from
                 /// the next process (already incremented )
-              } else if (k == mutexes[j].queueSize - 1) {
+              } else if (k == mutexes[j].queueSize - 1) 
+              {
                 mutexes[j].processQueue[k] = 0;
                 mutexes[j].queueSize--;
               }
               k++;
             }
           }
-
           /// wake up next waiter how to do it ?
           // pkilll
           // show run
@@ -534,7 +563,8 @@ void systickIsr(void)
   // for 1 sec and 1ms is then it should tick 1000 times in order for it to go
   // off
 
-  if (counter == 1000) {
+  if (counter == 1000) 
+  {
 
     if ((change % 2) == 0)
       change = 1;
@@ -543,7 +573,8 @@ void systickIsr(void)
 
     counter = 0;
 
-    for (j = 0; j < MAX_TASKS; j++) {
+    for (j = 0; j < MAX_TASKS; j++) 
+    {
       tcb[j].clocks[change] = 0;
     }
   }
@@ -552,11 +583,13 @@ void systickIsr(void)
   int i = 0;
   while (i < 12) // total tasks
   {
-    if (tcb[i].state == STATE_DELAYED) {
+    if (tcb[i].state == STATE_DELAYED) 
+    {
       if (tcb[i].ticks > 0)
         tcb[i].ticks--;
 
-      if (tcb[i].ticks == 0) {
+      if (tcb[i].ticks == 0) 
+      {
         tcb[i].state = STATE_READY;
       }
     }
@@ -564,7 +597,7 @@ void systickIsr(void)
   }
 
   if (preemption == 1)
-    NVIC_INT_CTRL_R |= NVIC_INT_CTRL_PEND_SV;
+    NVIC_INT_CTRL_R |= NVIC_INT_CTRL_PEND_SV;  // If the premption is on then PENDSV bit is set and control goes to PendSV for task are switched every time systickIsr is called
 }
 
 void pidint(uint32_t pid) 
@@ -572,11 +605,13 @@ void pidint(uint32_t pid)
   static char str[12];
   int i = 0;
 
-  if (pid == 0) {
+  if (pid == 0) 
+  {
     str[i++] = 0;
   }
 
-  while (pid != 0) {
+  while (pid != 0) 
+  {
     int rem = pid % 10;
     str[i++] = rem + '0';
     pid = pid / 10;
@@ -586,7 +621,8 @@ void pidint(uint32_t pid)
   // Reverse the string
   int start = 0;
   int end = i - 1;
-  while (start < end) {
+  while (start < end) 
+  {
     char temp = str[start];
     str[start] = str[end];
     str[end] = temp;
@@ -640,11 +676,10 @@ void pendSvIsr(void)
 
   taskCurrent = rtosScheduler();
 
-  // applySramSrdMask((tcb[taskCurrent].srd[k]),k,taskCurrent);
-
   applySramSrdMask((tcb[taskCurrent].srd[reg[taskCurrent]]), reg[taskCurrent],taskCurrent);
 
-  if (tcb[taskCurrent].state == STATE_READY) {
+  if (tcb[taskCurrent].state == STATE_READY) 
+  {
     // start of next task enable timer
     TIMER1_TAV_R = 0;
     TIMER1_CTL_R |= TIMER_CTL_TAEN;
@@ -697,8 +732,7 @@ void pendSvIsr(void)
     // Setting the Thumb bit in the xPSR register indicates that the processor
     // is in Thumb state and should execute Thumb instructions . If the Thumb
     //bit is not set, the processor may attempt to execute ARM instructions
-    xpsrtolr(0x01000000, (uint32_t)tcb[taskCurrent].pid,
-             0xFFFFFFFD); // entering garbage
+    xpsrtolr(0x01000000, (uint32_t)tcb[taskCurrent].pid,0xFFFFFFFD); // entering garbage
     pushremainingone(0x12, 0x12, 0x12);
     pushremainingtwo(0x12, 0x12);
     tcb[taskCurrent].state = STATE_READY;
@@ -707,7 +741,8 @@ void pendSvIsr(void)
 
 // REQUIRED: modify this function to add support for the service call
 // REQUIRED: in preemptive code, add code to handle synchronization primitives
-void svCallIsr(void) {
+void svCallIsr(void) 
+{
   /*  uint32_t* psp = getPSP();
     uint32_t* y = psp + 6; // Move the pointer to the stacked PC value
     uint16_t* currsvc = (uint16_t*)(*y - 2); // Subtract 2 from the return
@@ -717,21 +752,19 @@ void svCallIsr(void) {
   // arm documentation :how to write an svc function
   // points to R0 (psp)
   uint8_t svcno = getsvc();
-
   uint32_t *val;
-
   static char str[12];
   char ch, st[2];
   int i = 0, j = 0;
   char *name;
   _fn fptr;
   uint8_t flagsem = 0, flagmut = 0;
-
   int stable;
   uint64_t total = 0, taskusage;
   uint32_t a, b;
 
-  switch (svcno) {
+  switch (svcno) 
+  {
   case 1:
     NVIC_INT_CTRL_R |= NVIC_INT_CTRL_PEND_SV;
     break;
@@ -746,13 +779,15 @@ void svCallIsr(void) {
 
   case 3: // lock
     val = getPSP();
-    if (mutexes[*val].lock == 0) {
+    if (mutexes[*val].lock == 0) 
+    {
       mutexes[*val].lock = 1;
       mutexes[*val].lockedBy = taskCurrent;
       tcb[taskCurrent].mutex = *val;
 
       return;
-    } else {
+    } else 
+    {
       mutexes[*val].processQueue[mutexes[*val].queueSize] = taskCurrent;
       // sizxe check
       mutexes[*val].queueSize++;
@@ -763,7 +798,8 @@ void svCallIsr(void) {
 
   case 4: // unlock
     val = getPSP();
-    if ((mutexes[*val].lock == 1) && (mutexes[*val].lockedBy == taskCurrent)) {
+    if ((mutexes[*val].lock == 1) && (mutexes[*val].lockedBy == taskCurrent)) 
+    {
       mutexes[*val].lock = 0;
       if (mutexes[*val].queueSize > 0) // get the index that is zero
       {
@@ -789,7 +825,8 @@ void svCallIsr(void) {
       return;
     }
 
-    else {
+    else 
+    {
       semaphores[*val].processQueue[semaphores[*val].queueSize] = taskCurrent;
       semaphores[*val].queueSize++;
       tcb[taskCurrent].state = STATE_BLOCKED_SEMAPHORE;
@@ -800,7 +837,8 @@ void svCallIsr(void) {
   case 6: // post
     val = getPSP();
     semaphores[*val].count++;
-    if (semaphores[*val].queueSize > 0) {
+    if (semaphores[*val].queueSize > 0) 
+    {
       uint8_t currsem = semaphores[*val].processQueue[0];
       tcb[currsem].state = STATE_READY;
       semaphores[*val].count--;
@@ -814,10 +852,12 @@ void svCallIsr(void) {
 
   case 7: // sched
     val = getPSP();
-    if (strcompare(*val, "prio")) {
+    if (strcompare(*val, "prio")) 
+    {
       priorityScheduler = 1;
 
-    } else if (strcompare(*val, "rr")) {
+    } else if (strcompare(*val, "rr")) 
+    {
       priorityScheduler = 0;
     }
     break;
@@ -826,8 +866,10 @@ void svCallIsr(void) {
 
     val = getPSP();
     name = (char *)*val;
-    for (i = 0; i < taskCount; i++) {
-      if (strcompare(tcb[i].name, name) == 1) {
+    for (i = 0; i < taskCount; i++) 
+    {
+      if (strcompare(tcb[i].name, name) == 1) 
+      {
         *val = (uint32_t)tcb[i].pid; // replace it with the current
         // imported from kill function
         pidint(*val);
@@ -839,9 +881,11 @@ void svCallIsr(void) {
 
   case 9: // ipcs
 
-    for (i = 0; i < MAX_SEMAPHORES; i++) {
+    for (i = 0; i < MAX_SEMAPHORES; i++) 
+    {
       // putsUart0("\n QUEUE info\n");
-      if (semaphores[i].queueSize > 0) {
+      if (semaphores[i].queueSize > 0) 
+      {
 
         flagsem = 1;
         //  putsUart0("\n name\n");
@@ -867,7 +911,8 @@ void svCallIsr(void) {
         putcUart0(' ');
 
         // names of those waiting in the queue
-        for (j = 0; j < semaphores[i].queueSize; j++) {
+        for (j = 0; j < semaphores[i].queueSize; j++) 
+        {
           putsUart0("  Waiting semaphore");
           putcUart0(' ');
           putsUart0(tcb[semaphores[i].processQueue[j]].name);
@@ -881,9 +926,11 @@ void svCallIsr(void) {
       putsUart0("\n no semaphores ");
     }
 
-    for (i = 0; i < MAX_MUTEXES; i++) {
+    for (i = 0; i < MAX_MUTEXES; i++) 
+    {
       // putsUart0("\n QUEUE info\n");
-      if (mutexes[i].queueSize > 0) {
+      if (mutexes[i].queueSize > 0) 
+      {
         flagmut = 1;
 
         //   putsUart0(tcb[mutexes[i]].name);
@@ -913,20 +960,21 @@ void svCallIsr(void) {
         str[1] = '\0';
         putsUart0(tcb[mutexes[i].lockedBy].name);
         putsUart0(str);
-        //  putsUart0(mutexes[i].lockedBy + '0');
         putcUart0(' ');
         putcUart0(' ');
         putcUart0(' ');
 
         //   putcUart0('\n');
-        for (j = 0; j < mutexes[i].queueSize; j++) {
+        for (j = 0; j < mutexes[i].queueSize; j++) 
+        {
           putsUart0("    waiting mutex    ");
           putcUart0(' ');
           putsUart0(tcb[mutexes[i].processQueue[j]].name);
         }
       }
     }
-    if (flagmut == 0) {
+    if (flagmut == 0) 
+    {
       putsUart0("\nno mutex");
     }
     break;
@@ -941,8 +989,10 @@ void svCallIsr(void) {
     val = getPSP();
     char *name = (char *)*val;
 
-    for (i = 0; i < taskCount; i++) {
-      if (strcompare(tcb[i].name, name) == 1) {
+    for (i = 0; i < taskCount; i++) 
+    {
+      if (strcompare(tcb[i].name, name) == 1) 
+      {
         stopThread((_fn)tcb[i].pid);
         break;
       }
@@ -954,8 +1004,10 @@ void svCallIsr(void) {
     val = getPSP();
     name = (char *)*val;
 
-    for (i = 0; i < taskCount; i++) {
-      if (strcompare(tcb[i].name, name) == 1) {
+    for (i = 0; i < taskCount; i++) 
+    {
+      if (strcompare(tcb[i].name, name) == 1) 
+      {
         restartThread((_fn)tcb[i].pid);
         break;
       }
@@ -972,11 +1024,13 @@ void svCallIsr(void) {
     else if (change == 1)
       stable = 0;
     putsUart0("\n");
-    for (i = 0; i < taskCount; i++) {
+    for (i = 0; i < taskCount; i++) 
+    {
       total += tcb[i].clocks[stable];
     }
 
-    for (i = 0; i < taskCount; i++) {
+    for (i = 0; i < taskCount; i++) 
+    {
       // usage per task
       taskusage = (tcb[i].clocks[stable] * 25 * 100);
       taskusage /= total;
@@ -1006,25 +1060,30 @@ void svCallIsr(void) {
 
   case 15: // preemption
     val = getPSP();
-    if (strcompare(*val, "on")) {
+    if (strcompare(*val, "on")) 
+    {
       preemption = 1;
 
-    } else if (strcompare(*val, "off")) {
+    } else if (strcompare(*val, "off")) 
+    {
       preemption = 0;
     }
     break;
   }
 }
 
-void convert(uint32_t pid) {
+void convert(uint32_t pid) 
+{
   static char str[20];
   int i = 0;
 
-  if (pid == 0) {
+  if (pid == 0) 
+  {
     str[i++] = '0';
   }
 
-  while (pid != 0) {
+  while (pid != 0) 
+  {
     int rem = pid % 10;
     str[i++] = rem + '0';
     pid = pid / 10;
@@ -1034,7 +1093,8 @@ void convert(uint32_t pid) {
   // Reverse the string
   int start = 0;
   int end = i - 1;
-  while (start < end) {
+  while (start < end) 
+  {
     char temp = str[start];
     str[start] = str[end];
     str[end] = temp;

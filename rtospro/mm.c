@@ -57,7 +57,8 @@ uint32_t res;
 
 // REQUIRED: add your malloc code here and update the SRD bits for the current
 // thread
-void *mallocFromHeap(uint32_t size_in_bytes) {
+void *mallocFromHeap(uint32_t size_in_bytes) 
+{
   uint32_t memptrcpy4 = (uint32_t)memptr4;
   uint32_t *start4 = memptr4;
   uint32_t memptrcpy8 = (uint32_t)memptr8;
@@ -66,12 +67,6 @@ void *mallocFromHeap(uint32_t size_in_bytes) {
   uint32_t *start1536 = blockptr;
 
   uint32_t aligned_size, curr = 0, i = 0, flag8 = 0, flag4 = 0, flag1536 = 0,count = 0;
-  //  int sizepartition =0;
-  //  uint32_t * bottom,top  ;
-  //   bottom = (uint32_t*)(0x20001000);
-  //   top = (uint32_t*)(0x20007FFF);
-  // uint32_t a[6] = { 0x20001000, 0x20002400, };// start ending address and for
-  // the ending address it should be < not <=
 
   if (size_in_bytes <= 512) 
   {
@@ -114,7 +109,7 @@ void *mallocFromHeap(uint32_t size_in_bytes) {
     return NULL;
 
   // 0x20005E00 just before 20006000
-  // 0x200 / 4 = 0x80 (you can t do 0x200 for pointer
+  // 0x200 / 4 = 0x80 (you can t do 0x200 for pointer)
   while ((i < aligned_size) && ((memptrcpy4 < 0x20005E00)) && (aligned_size != 1536) && curr == 4) 
   {
     flag4 = 1;
@@ -139,14 +134,19 @@ void *mallocFromHeap(uint32_t size_in_bytes) {
       count++;
       continue;
     }
-    // continuation of 4k block ie is the second block next jump
-    //   Hex value:
-    //  20004200 � 20001E00 = 2400
-    else if ((memptrcpy4 == 20001E00) && (aligned_size != 1536)) {
+    // Continuation of 4k block ie is the second block next jump
+    // Hex value: 0x20004200 - 0x20001E00 = 0x2400
+    else if ((memptrcpy4 == 20001E00) && (aligned_size != 1536)) 
+    {
+      // 0x2400 / 4 = 0x900 Steps.
       memptrcpy4 += 0x2400;
-      // 0x2400 / 4 = 0x900 steps.
       memptr4 = (uint32_t *)memptrcpy4;
     }
+    // else if((memptrcpy4 == 0x20004E00) && (aligned_size != 1536))
+    // {
+    //   memptrcpy4 += 0x2400;
+    //   memptr4 = (uint32_t *)memptrcpy4;
+    // }
   }
 
   while ((i < aligned_size) && (memptrcpy8 < 0x20008000) && (aligned_size != 1536) && curr == 8) 
@@ -172,8 +172,7 @@ void *mallocFromHeap(uint32_t size_in_bytes) {
       count++;
       continue;
     }
-    // Hex value:
-    // 20006400 � 20003C00 = 2800  8k block  next jump
+    // Hex value: 0x20006400 - 0x20003C00 = 0x2800  8k Block  Next Jump
     else if ((memptrcpy8 == 0x20003C00) && (aligned_size != 1536)) 
     {
       memptrcpy8 += 0x2800;
@@ -181,15 +180,14 @@ void *mallocFromHeap(uint32_t size_in_bytes) {
     }
   }
 
-  // need to eat into the 1536 blocks if we have the botht the 512 and 1024
-  // blocks ocupied
-
-  if ((memptrcpy4 >= 0x20005E00) && (memptrcpy8 < 0x20008000) &&
-      (aligned_size != 1536)) {
+  // Need to consume the 1536 blocks if we have the both the 512 and 1024 blocks occupied
+  if ((memptrcpy4 >= 0x20005E00) && (memptrcpy8 < 0x20008000) && (aligned_size != 1536)) 
+  {
     flag1536 = 1;
-    while ((blockptrcpy >= 0x20001E00) && (blockptrcpy < 0x20006400) &&
-           (i < aligned_size)) {
-      if (blockptrcpy == 0x20001E00) {
+    while ((blockptrcpy >= 0x20001E00) && (blockptrcpy < 0x20006400) && (i < aligned_size)) 
+    {
+      if (blockptrcpy == 0x20001E00) 
+      {
         blockptrcpy += 0x200;
         blockptr = (uint32_t *)blockptrcpy;
         i += 512;
@@ -208,7 +206,7 @@ void *mallocFromHeap(uint32_t size_in_bytes) {
       } 
       else if (blockptrcpy == 0x20002400) 
       {
-        //Hex value:20003C00 � 20002400 = 1800
+        //Hex value:20003C00 - 20002400 = 1800
         blockptrcpy += 0x1800;
         blockptr = (uint32_t *)blockptrcpy;
       } 
@@ -220,7 +218,6 @@ void *mallocFromHeap(uint32_t size_in_bytes) {
         session[present++] = 1024;
         count++;
         continue;
-
       } 
       else if (blockptrcpy == 0x20004000) 
       {
@@ -234,7 +231,7 @@ void *mallocFromHeap(uint32_t size_in_bytes) {
       } 
       else if (blockptrcpy == 0x20004200) 
       {
-        //Hex value:20005E00 � 20004200 = 1C00
+        //Hex value:20005E00 - 20004200 = 1C00
         blockptrcpy += 0x1C00;
         blockptr = (uint32_t *)blockptrcpy;
       } 
@@ -260,12 +257,13 @@ void *mallocFromHeap(uint32_t size_in_bytes) {
     }
   }
 
-  if ((aligned_size == 1536) && (blockptrcpy >= 0x20001E00) &&
-      (blockptrcpy < 0x20006400)) {
+  if ((aligned_size == 1536) && (blockptrcpy >= 0x20001E00) && (blockptrcpy < 0x20006400)) 
+  {
     flag1536 = 1;
     while (i < aligned_size)
-      if (blockptrcpy == 0x20001E00) {
-        // increment with 1536
+      if (blockptrcpy == 0x20001E00) 
+      {
+        // Increment with 1536
         blockptrcpy += 0x600;
         blockptr = (uint32_t *)blockptrcpy;
         i += 1536;
@@ -312,8 +310,8 @@ void *mallocFromHeap(uint32_t size_in_bytes) {
   uint32_t b = (uint32_t)memptr8;
   uint32_t c = (uint32_t)blockptr;
 
-  if ((blockptrcpy >= 0x20006400) && (memptrcpy4 >= 0x20005E00) &&
-      (memptrcpy8 >= 0x20008000)) {
+  if ((blockptrcpy >= 0x20006400) && (memptrcpy4 >= 0x20005E00) && (memptrcpy8 >= 0x20008000)) 
+  {
     return NULL;
   }
   if ((flag4 == 1) && (flag8 == 0) && (flag1536 == 0))
@@ -357,10 +355,8 @@ void overallaccess()
 void allowFlashAccess() 
 {
   NVIC_MPU_NUMBER_R |= REGIONPRIORITY1;
-
   NVIC_MPU_BASE_R =(0x00000000 | REGIONPRIORITY1);  // not including the base address as i
                                                     // base is 0x00000000
-
   NVIC_MPU_ATTR_R = ((3 << 24) | (17 << 1) | NVIC_MPU_ATTR_ENABLE); // ap bit is set for full access
                                                                     // 256 when calculated gave 17
 }
@@ -372,7 +368,8 @@ void allowPeripheralAccess()
   NVIC_MPU_ATTR_R =(NVIC_MPU_ATTR_XN | (1 << 24) | (0xB << 1) | NVIC_MPU_ATTR_ENABLE);
 }
 
-void setupSramAccess() {
+void setupSramAccess() 
+{
   block4rule(REGIONPART1, REGIONPRIORITY3);
   block8rule(REGIONPART2, REGIONPRIORITY4);
   block4rule(REGIONPART3, REGIONPRIORITY5);
@@ -390,8 +387,7 @@ void block8rule(uint32_t baseaddr, uint32_t regionpriority)
   // Base address register
   NVIC_MPU_BASE_R = (baseaddr | NVIC_MPU_BASE_VALID | regionpriority);
   // 0x0000000C size after calculating for 2^(n+1)
-  NVIC_MPU_ATTR_R =
-      (NVIC_MPU_ATTR_XN | (1 << 24) | (0xC << 1) | NVIC_MPU_ATTR_ENABLE);
+  NVIC_MPU_ATTR_R = (NVIC_MPU_ATTR_XN | (1 << 24) | (0xC << 1) | NVIC_MPU_ATTR_ENABLE);
   // 0x01000000 =1<<24  ap bit----  privileged(rw) and  unprivileged(no access)
   // accordign to the document
 }
@@ -406,7 +402,8 @@ void block4rule(uint32_t baseaddr, uint32_t regionpriority)
   // and  unprivileged(no access) accordign to the document
 }
 
-void applySramSrdMask(uint8_t srdMask, uint8_t k, uint8_t curr) {
+void applySramSrdMask(uint8_t srdMask, uint8_t k, uint8_t curr) 
+{
   uint8_t i = k, mask;
   uint32_t region;
   mask = srdMask;
