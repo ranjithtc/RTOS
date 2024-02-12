@@ -1,10 +1,3 @@
-/*
- * tm4c123gh6pm.h
- *
- *  Created on: Aug 30, 2023
- *      Author: Ranjith
- */
-
  //******************************************************* **********************
 //
 // tm4c123gh6pm.h - TM4C123GH6PM Register Definitions
